@@ -1,78 +1,73 @@
-# Hi there 👋  
-👨‍💻 Mohamed CHRAYAH
+# 👨‍💻 Mohamed CHRAYAH  
 
-📍 Orléans, France | 🎓 Master’s in Distributed Information Systems (MIAGE SIR) @ Université d’Orléans
-
----
-
-## 👤 Profile
-
-- 🌱 Passionate about Full Stack Development and software engineering.
-- 🧠 Strong foundation in backend and frontend web technologies.
-- 🛠️ Proficient in:
-    - **Backend:** Java (Spring Boot, JEE, JFX, STRUTS 2, Data JPA), PHP (Symfony 7), Python, Node.js, REST APIs
-    - **Frontend:** HTML, CSS, JavaScript, TypeScript (Angular 17, Vue.js)
-    - **Databases:** MySQL, Oracle, PostgreSQL
-    - **Tools:** Git, Docker, Maven, NetBeans, IntelliJ IDEA, PhpStorm, R Studio
-- 🔍 Always eager to learn, solve real-world problems, and collaborate in dynamic teams.
+⚡ Building the future of software, one commit at a time.  
+📍 Orléans, France | 🎓 Master’s in Distributed Information Systems (MIAGE SIR) – Université d’Orléans  
 
 ---
 
-## 🛠️ Technical Stack
+## 🚀 About Me  
 
-Java &nbsp;|&nbsp; Spring Boot &nbsp;|&nbsp; Angular &nbsp;|&nbsp; Vue.js &nbsp;|&nbsp; TypeScript &nbsp;|&nbsp; PHP/Symfony &nbsp;|&nbsp; Python &nbsp;|&nbsp; Node.js &nbsp;|&nbsp; Docker &nbsp;|&nbsp; Git
-
----
-
-## 📌 Highlight Projects
-
-- [`welcomeDev`](https://github.com/mohamedChrayah/welcomeDev): Platform connecting developers and companies.
-- [`Front_VueBooking`](https://github.com/YahyaWebTales/Front_VueBooking): A Vue.js-based booking system.
-- [`amigo`](https://github.com/mohamedChrayah/amigo): Student association web platform.
-- [`JeuMemory`](https://github.com/yFar1310/JeuMemory): Memory game in Java.
-- [`Jeux_De_Societe_Java`](https://github.com/mohamedChrayah/Jeux_De_Societe_Java): Java board games.
+- 💡 Full Stack Developer passionate about **clean code** & **scalable systems**  
+- 🌱 Always learning new technologies and improving my craft  
+- 🤝 Team player who enjoys solving **real-world problems** through collaboration  
 
 ---
 
-## 📊 GitHub Overview
+## 🛠️ Tech Stack  
 
-<!-- GitHub stats (replace with your actual username) -->
-<p align="left">
-  <img src="https://github-readme-stats.vercel.app/api?username=mohamedChrayah&show_icons=true&hide_title=true" alt="GitHub Stats" height="150"/>
-  <img src="https://github-readme-streak-stats.herokuapp.com/?user=mohamedChrayah" alt="GitHub Streak" height="150"/>
+**Languages & Frameworks**  
+☕ Java (Spring Boot, JEE, JFX, Struts 2, Data JPA) | 🐘 PHP (Symfony 7) | 🐍 Python | ⚡ Node.js | TypeScript | JavaScript  
+🎨 HTML | CSS | Angular 17 | Vue.js  
+
+**Databases**  
+🗄️ MySQL | PostgreSQL | Oracle  
+
+**Tools & DevOps**  
+⚙️ Git | Docker | Maven | IntelliJ IDEA | PhpStorm | NetBeans | R Studio  
+
+---
+
+## 📌 Featured Projects  
+
+- 🔗 [**welcomeDev**](https://github.com/mohamedChrayah/welcomeDev) – Platform connecting developers & companies  
+
+- 🏫 **University Project – Meeting Management Web App**  
+  Web application to manage meetings in an academic alternance program.  
+  **Tech stack:** Java (JSP/Servlets), Spring Boot, REST API, JWT, HTML/CSS, Maven  
+
+- 🎓 **Final Year Project – Student Project Management Tool**  
+  Developed a platform to manage student projects with integrated Bitbucket API.  
+  **Tech stack:** Symfony 7, Bitbucket API, Docker, Git  
+
+- 👥 **AMIGO – Student Association Platform**  
+  Web platform for managing activities of a student association.  
+  **Tech stack:** Symfony 7 (Backend), Angular 17 (Frontend), Git  
+
+- 🎮 [**JeuMemory**](https://github.com/yFar1310/JeuMemory) – Memory game in Java  
+- 🎲 [**Jeux_De_Societe_Java**](https://github.com/mohamedChrayah/Jeux_De_Societe_Java) – Java board games  
+
+---
+
+## 📊 GitHub Stats  
+
+<p align="center">
+  <img src="https://github-readme-stats.vercel.app/api?username=mohamedChrayah&show_icons=true&theme=tokyonight&hide_title=true" height="160"/>
+  <img src="https://github-readme-streak-stats.herokuapp.com/?user=mohamedChrayah&theme=tokyonight" height="160"/>
 </p>
 
 ---
 
-## 🌐 Connect with Me
+## 🌐 Let’s Connect  
 
-- [GitHub](https://github.com/mohamedChrayah)
-- [LinkedIn](https://www.linkedin.com/in/mohamed-chrayah-416080237/)
-
----
-
-## 🎯 Hobbies
-
-In my free time, I enjoy:
-- 📚 Reading
-- ⚽ Playing & watching football
-- 🏋️ Fitness & strength training
+📎 [GitHub](https://github.com/mohamedChrayah)  
+💼 [LinkedIn](https://www.linkedin.com/in/mohamed-chrayah-416080237/)  
 
 ---
 
-> “Code is like humor. When you have to explain it, it’s bad.”
+## 🎯 Beyond Code  
 
-<!--
-**mohamedChrayah/mohamedChrayah** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+📚 Reading | ⚽ Football | 🏋️ Fitness & Strength Training  
 
-Here are some ideas to get you started:
+---
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+💡 *“Code is like humor. When you have to explain it, it’s bad.”*  

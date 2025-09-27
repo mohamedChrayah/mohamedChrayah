@@ -29,8 +29,6 @@
 
 ## 📌 Featured Projects  
 
-- 🔗 [**welcomeDev**](https://github.com/mohamedChrayah/welcomeDev) – Platform connecting developers & companies  
-
 - 🏫 **University Project – Meeting Management Web App**  
   Web application to manage meetings in an academic alternance program.  
   **Tech stack:** Java (JSP/Servlets), Spring Boot, REST API, JWT, HTML/CSS, Maven  
@@ -42,9 +40,6 @@
 - 👥 **AMIGO – Student Association Platform**  
   Web platform for managing activities of a student association.  
   **Tech stack:** Symfony 7 (Backend), Angular 17 (Frontend), Git  
-
-- 🎮 [**JeuMemory**](https://github.com/yFar1310/JeuMemory) – Memory game in Java  
-- 🎲 [**Jeux_De_Societe_Java**](https://github.com/mohamedChrayah/Jeux_De_Societe_Java) – Java board games  
 
 ---
 

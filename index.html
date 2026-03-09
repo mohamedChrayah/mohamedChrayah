@@ -1,0 +1,1919 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des Demandes – Téléconseillers</title>
+  <style>
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #333; background: #F0F2F5; overflow-x: hidden; }
+
+    /* ============================================================
+       BANDEAU DE NAVIGATION
+    ============================================================ */
+    #navbar {
+      background: #003366;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 54px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+    #navbar .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    #navbar .brand-icon {
+      width: 32px; height: 32px;
+      background: #0066CC;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 16px;
+    }
+    #navbar .brand-name {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    #navbar .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+    #navbar .user-avatar {
+      width: 32px; height: 32px;
+      background: #0066CC;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    /* ============================================================
+       BARRE D'ONGLETS
+    ============================================================ */
+    #tab-bar {
+      background: #E8EDF2;
+      border-bottom: 2px solid #C5D0DC;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 16px;
+      gap: 4px;
+      min-height: 40px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      flex-shrink: 0;
+    }
+    #tab-bar::-webkit-scrollbar { height: 4px; }
+    #tab-bar::-webkit-scrollbar-thumb { background: #aab; border-radius: 2px; }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: #D0D9E3;
+      border: 1px solid #B0BCC8;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      font-size: 13px;
+      color: #4A5568;
+      white-space: nowrap;
+      transition: background 0.15s;
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tab:hover { background: #C0CBD8; }
+    .tab.active {
+      background: #fff;
+      border-color: #0066CC #0066CC #fff;
+      color: #0066CC;
+      font-weight: 600;
+      position: relative;
+      bottom: -1px;
+    }
+    .tab .tab-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+    }
+    .tab .tab-close {
+      flex-shrink: 0;
+      width: 18px; height: 18px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      font-size: 12px;
+      color: #667;
+      transition: background 0.15s, color 0.15s;
+    }
+    .tab .tab-close:hover { background: #CC0000; color: #fff; }
+    .tab-add-btn {
+      padding: 6px 10px;
+      background: transparent;
+      border: 1px dashed #7A8CA0;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      font-size: 18px;
+      color: #7A8CA0;
+      transition: color 0.15s, border-color 0.15s;
+      line-height: 1;
+      align-self: flex-end;
+      margin-bottom: 1px;
+    }
+    .tab-add-btn:hover { color: #0066CC; border-color: #0066CC; }
+
+    /* ============================================================
+       CONTENU PRINCIPAL
+    ============================================================ */
+    #main-content {
+      padding: 20px;
+      min-height: calc(100vh - 94px);
+    }
+
+    .screen { display: none; }
+    .screen.active { display: flex; flex-direction: column; gap: 0; }
+
+    /* 3 ZONES */
+    .zone-entete {
+      background: #E8EDF2;
+      border: 1px solid #C5D0DC;
+      border-radius: 8px 8px 0 0;
+      padding: 16px 20px;
+    }
+    .zone-entete h2 {
+      font-size: 16px;
+      color: #003366;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .zone-entete .context-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 13px;
+      color: #555;
+    }
+    .context-info .info-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .context-info .info-label { font-weight: 600; color: #003366; }
+    .zone-entete .error-list {
+      margin-top: 10px;
+      background: #FFF0F0;
+      border: 1px solid #CC0000;
+      border-radius: 4px;
+      padding: 10px 14px;
+    }
+    .zone-entete .error-list p {
+      color: #CC0000;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .zone-entete .error-list p::before { content: "⚠ "; }
+
+    .zone-travail {
+      background: #F5F7FA;
+      border: 1px solid #C5D0DC;
+      border-top: none;
+      padding: 24px 20px;
+      flex: 1;
+    }
+
+    .zone-commandes {
+      background: #E8EDF2;
+      border: 1px solid #C5D0DC;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .zone-commandes .cmd-spacer { flex: 1; }
+
+    /* ============================================================
+       BOUTONS
+    ============================================================ */
+    .btn {
+      padding: 8px 20px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:active { opacity: 0.7; }
+
+    /* Validant : bord épais */
+    .btn-validant {
+      background: #0066CC;
+      border: 3px solid #004499;
+      color: #fff;
+    }
+    /* Non validant : bord normal */
+    .btn-non-validant {
+      background: #fff;
+      border: 1px solid #0066CC;
+      color: #0066CC;
+    }
+    /* Annuler */
+    .btn-annuler {
+      background: #fff;
+      border: 1px solid #CC0000;
+      color: #CC0000;
+    }
+
+    /* ============================================================
+       FORMULAIRES
+    ============================================================ */
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+    .required-star { color: #CC0000; font-size: 14px; }
+    .help-btn {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #0066CC;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .help-btn:hover { background: #004499; }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #B0BCC8;
+      border-radius: 4px;
+      font-size: 13px;
+      background: #fff;
+      color: #333;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: #0066CC;
+      box-shadow: 0 0 0 2px rgba(0,102,204,0.15);
+    }
+    .form-textarea { resize: vertical; min-height: 100px; }
+    .form-input.error, .form-select.error, .form-textarea.error {
+      border-color: #CC0000;
+    }
+
+    /* Radio group for type selection */
+    .radio-group { display: flex; flex-direction: column; gap: 10px; }
+    .radio-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 16px;
+      background: #fff;
+      border: 1px solid #C5D0DC;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .radio-option:hover { border-color: #0066CC; background: #F0F6FF; }
+    .radio-option input[type="radio"] { margin-top: 2px; cursor: pointer; }
+    .radio-option.selected { border-color: #0066CC; background: #EDF4FF; }
+    .radio-option .radio-text strong { display: block; color: #003366; margin-bottom: 2px; }
+    .radio-option .radio-text span { color: #666; font-size: 12px; }
+
+    /* ============================================================
+       TABLEAU
+    ============================================================ */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .data-table th {
+      background: #003366;
+      color: #fff;
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .data-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #E8EDF2;
+      font-size: 13px;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #F0F6FF; }
+    .data-table .checkbox-col { width: 40px; text-align: center; }
+
+    /* Status badges */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .badge-nouvelle    { background: #E3F2FF; color: #005AAA; border: 1px solid #B0CCEE; }
+    .badge-pec         { background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7; }
+    .badge-attente     { background: #FFF8E1; color: #F57F17; border: 1px solid #FFE082; }
+    .badge-resolue     { background: #F3E5F5; color: #7B1FA2; border: 1px solid #CE93D8; }
+    .badge-close       { background: #ECEFF1; color: #455A64; border: 1px solid #B0BEC5; }
+    .badge-abandonnee  { background: #FFEBEE; color: #C62828; border: 1px solid #EF9A9A; }
+
+    /* ============================================================
+       LISTE DES DEMANDES (ÉCRAN A)
+    ============================================================ */
+    .screen-a-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .screen-a-toolbar h3 {
+      font-size: 15px;
+      color: #003366;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .filter-bar .form-input, .filter-bar .form-select {
+      width: auto;
+      flex: 1;
+    }
+    .link-btn {
+      background: none;
+      border: none;
+      color: #0066CC;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 13px;
+      padding: 0;
+    }
+    .link-btn:hover { color: #004499; }
+
+    /* ============================================================
+       SECTIONS COORDONNÉES BANCAIRES (ÉCRAN C1)
+    ============================================================ */
+    .section-card {
+      background: #fff;
+      border: 1px solid #C5D0DC;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .section-card h4 {
+      font-size: 14px;
+      color: #003366;
+      font-weight: 700;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #E8EDF2;
+    }
+
+    /* Coordonnée bancaire items */
+    .coord-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid #E0E8F0;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      background: #F9FBFD;
+    }
+    .coord-item:last-child { margin-bottom: 0; }
+    .coord-item .coord-info { flex: 1; }
+    .coord-item .coord-info strong { display: block; font-size: 13px; color: #333; }
+    .coord-item .coord-info span  { font-size: 12px; color: #666; }
+
+    /* Contact items (C3) */
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid #E0E8F0;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      background: #F9FBFD;
+    }
+    .contact-item .contact-value { flex: 1; font-size: 13px; color: #333; }
+    .contact-item .contact-type  { font-size: 11px; color: #777; background: #E8EDF2; padding: 2px 6px; border-radius: 10px; }
+    .contact-edit-input { display: none; flex: 1; }
+    .contact-item.editing .contact-value { display: none; }
+    .contact-item.editing .contact-edit-input { display: block; }
+
+    /* Selected items tags */
+    .selected-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #EDF4FF;
+      border: 1px solid #B0CCEE;
+      border-radius: 12px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #003366;
+    }
+    .tag .tag-remove {
+      cursor: pointer;
+      color: #CC0000;
+      font-weight: 700;
+      font-size: 13px;
+      line-height: 1;
+    }
+
+    /* Adresse certifiée résultats */
+    .address-result-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border: 1px solid #E0E8F0;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      background: #F9FBFD;
+      cursor: pointer;
+    }
+    .address-result-item:hover { background: #EDF4FF; border-color: #0066CC; }
+    .address-result-item.selected { background: #EDF4FF; border-color: #0066CC; }
+
+    /* Récapitulatif (D) */
+    .recap-block {
+      background: #fff;
+      border: 1px solid #C5D0DC;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .recap-block h4 {
+      font-size: 14px;
+      color: #003366;
+      font-weight: 700;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #E8EDF2;
+    }
+    .recap-row {
+      display: flex;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px dotted #E0E8F0;
+      font-size: 13px;
+    }
+    .recap-row:last-child { border-bottom: none; }
+    .recap-label { font-weight: 600; color: #003366; min-width: 180px; }
+    .recap-value { color: #333; }
+
+    /* ============================================================
+       MODAL
+    ============================================================ */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      width: 600px;
+      max-width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-header {
+      background: #003366;
+      color: #fff;
+      padding: 14px 20px;
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header h3 { font-size: 15px; font-weight: 700; }
+    .modal-close {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 4px;
+    }
+    .modal-body { padding: 20px; flex: 1; background: #F5F7FA; }
+    .modal-footer {
+      padding: 14px 20px;
+      background: #E8EDF2;
+      border-top: 1px solid #C5D0DC;
+      border-radius: 0 0 8px 8px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* Tooltip d'aide */
+    .tooltip-container { position: relative; display: inline-block; }
+    .tooltip-box {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #003366;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      white-space: nowrap;
+      z-index: 50;
+      pointer-events: none;
+    }
+    .tooltip-container:hover .tooltip-box { display: block; }
+
+    /* Étapes wizard */
+    .wizard-steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 20px;
+    }
+    .wizard-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: #E8EDF2;
+      border: 1px solid #C5D0DC;
+      font-size: 12px;
+      color: #667;
+      font-weight: 600;
+    }
+    .wizard-step:first-child { border-radius: 4px 0 0 4px; }
+    .wizard-step:last-child { border-radius: 0 4px 4px 0; }
+    .wizard-step .step-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #B0BCC8;
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .wizard-step.active {
+      background: #0066CC;
+      border-color: #004499;
+      color: #fff;
+    }
+    .wizard-step.active .step-num { background: #fff; color: #0066CC; }
+    .wizard-step.done {
+      background: #E8F5E9;
+      border-color: #A5D6A7;
+      color: #2E7D32;
+    }
+    .wizard-step.done .step-num { background: #2E7D32; color: #fff; }
+    .wizard-arrow { color: #B0BCC8; font-size: 14px; flex-shrink: 0; }
+
+    /* Misc */
+    .mt-8  { margin-top: 8px; }
+    .mt-12 { margin-top: 12px; }
+    .mt-16 { margin-top: 16px; }
+    .text-muted { color: #888; font-size: 12px; }
+    .empty-state { text-align: center; color: #999; padding: 24px; font-size: 13px; }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 900px) {
+      #main-content { padding: 12px; }
+      .modal { width: 95vw; }
+      .wizard-steps { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ================================================================
+     BANDEAU DE NAVIGATION
+================================================================ -->
+<nav id="navbar">
+  <div class="brand">
+    <div class="brand-icon">GD</div>
+    <span class="brand-name">Gestion des Demandes</span>
+  </div>
+  <div class="user-info">
+    <div class="user-avatar">MD</div>
+    <div>
+      <div style="font-weight:600; font-size:13px;">Marie Dupont</div>
+      <div style="font-size:11px; color:#99BBDD;">Téléconseillère</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ================================================================
+     BARRE D'ONGLETS
+================================================================ -->
+<div id="tab-bar">
+  <!-- dynamically rendered -->
+</div>
+
+<!-- ================================================================
+     CONTENU PRINCIPAL
+================================================================ -->
+<div id="main-content">
+  <!-- dynamically rendered -->
+</div>
+
+<!-- ================================================================
+     MODAL : Sélection de contrats (Écran E)
+================================================================ -->
+<div id="modal-contrats" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Sélection des contrats</h3>
+      <button class="modal-close" onclick="closeModal('modal-contrats')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:#555;margin-bottom:12px;">Cochez les contrats à associer à la demande.</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="checkbox-col"><input type="checkbox" id="select-all-contrats" onchange="toggleAllContrats(this)"></th>
+            <th>N° Contrat</th>
+            <th>Type</th>
+            <th>Date de début</th>
+          </tr>
+        </thead>
+        <tbody id="modal-contrats-tbody">
+          <!-- dynamically rendered -->
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-non-validant" onclick="closeModal('modal-contrats')">Retour sans modification</button>
+      <button class="btn btn-validant" onclick="validerSelectionContrats()">Valider la sélection</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     MODAL : Ajout IBAN (Écran F)
+================================================================ -->
+<div id="modal-iban" class="modal-overlay">
+  <div class="modal" style="width:480px;">
+    <div class="modal-header">
+      <h3>Ajout d'une coordonnée bancaire</h3>
+      <button class="modal-close" onclick="closeModal('modal-iban')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">
+          IBAN
+          <span class="required-star">*</span>
+          <span class="tooltip-container">
+            <button type="button" class="help-btn">?</button>
+            <span class="tooltip-box">Format : FR76 XXXX XXXX XXXX XXXX XXXX XXX</span>
+          </span>
+        </label>
+        <input type="text" id="iban-input" class="form-input" placeholder="FR76 0000 0000 0000 0000 0000 000" maxlength="34">
+      </div>
+      <div class="form-group">
+        <label class="form-label">
+          Titulaire
+          <span class="required-star">*</span>
+        </label>
+        <input type="text" id="iban-titulaire" class="form-input" placeholder="Nom du titulaire">
+      </div>
+      <div id="iban-errors" class="zone-entete" style="display:none; padding:10px 14px; border-radius:4px; margin-top:8px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-annuler" onclick="closeModal('modal-iban')">Annuler</button>
+      <button class="btn btn-validant" onclick="validerIBAN()">Valider</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     MODAL : Aide contextuelle
+================================================================ -->
+<div id="modal-aide" class="modal-overlay">
+  <div class="modal" style="width:400px;">
+    <div class="modal-header">
+      <h3>Aide</h3>
+      <button class="modal-close" onclick="closeModal('modal-aide')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-aide-content" style="background:#fff; padding:20px; font-size:13px; color:#333;">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-non-validant" onclick="closeModal('modal-aide')">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =================================================================
+//  DONNÉES DE DÉMONSTRATION
+// =================================================================
+const CURRENT_USER = { nom: 'Dupont', prenom: 'Marie', role: 'Téléconseillère', initiales: 'MD' };
+
+const DEMANDEURS = [
+  { id: 1, nom: 'Martin',   prenom: 'Jean',   numClient: 'CLI-001',
+    emails: [{ id:1, adresse:'jean.martin@email.fr', type:'Professionnel' }, { id:2, adresse:'j.martin@hotmail.com', type:'Personnel' }],
+    telephones: [{ id:1, numero:'06 12 34 56 78', type:'Mobile' }, { id:2, numero:'01 23 45 67 89', type:'Domicile' }],
+    coordsBancaires: [
+      { id:1, iban:'FR76 3000 6000 0112 3456 7890 189', titulaire:'Jean Martin' },
+      { id:2, iban:'FR76 1027 8060 0001 2345 6789 082', titulaire:'Jean Martin' }
+    ],
+    contrats: []
+  },
+  { id: 2, nom: 'Leclerc',  prenom: 'Sophie', numClient: 'CLI-002',
+    emails: [{ id:1, adresse:'sophie.leclerc@gmail.com', type:'Personnel' }],
+    telephones: [{ id:1, numero:'07 65 43 21 00', type:'Mobile' }],
+    coordsBancaires: [{ id:1, iban:'FR76 4255 9000 0400 0123 4567 890', titulaire:'Sophie Leclerc' }],
+    contrats: []
+  },
+  { id: 3, nom: 'Bernard',  prenom: 'Pierre', numClient: 'CLI-003',
+    emails: [{ id:1, adresse:'p.bernard@entreprise.fr', type:'Professionnel' }],
+    telephones: [{ id:1, numero:'06 98 76 54 32', type:'Mobile' }, { id:2, numero:'05 56 78 90 12', type:'Bureau' }],
+    coordsBancaires: [],
+    contrats: []
+  }
+];
+
+const CONTRATS_DISPONIBLES = [
+  { id: 'CTR-2024-001', type: 'Assurance Vie',      dateDebut: '01/03/2020' },
+  { id: 'CTR-2024-002', type: 'Prévoyance',         dateDebut: '15/06/2021' },
+  { id: 'CTR-2024-003', type: 'Retraite',           dateDebut: '10/01/2022' },
+  { id: 'CTR-2024-004', type: 'Assurance Auto',     dateDebut: '22/09/2019' },
+  { id: 'CTR-2024-005', type: 'Épargne Retraite',   dateDebut: '05/04/2023' },
+];
+
+const TYPES_DEMANDE = [
+  { id: 'coords-bancaires', label: 'Modification de coordonnées bancaires',  desc: 'Mise à jour des coordonnées bancaires et des contrats associés' },
+  { id: 'changement-adresse', label: 'Changement d\'adresse',                desc: 'Modification de l\'adresse postale du demandeur' },
+  { id: 'maj-coordonnees',  label: 'Mise à jour de coordonnées',             desc: 'Ajout, modification ou suppression d\'emails et téléphones' },
+  { id: 'demande-info',     label: 'Demande d\'information',                  desc: 'Question ou demande de renseignement' },
+];
+
+const CANAUX = ['Téléphone', 'Courrier', 'Espace adhérent', 'Email', 'Chat', 'Visite'];
+
+const ADRESSES_CERTIFIEES = [
+  { id:1, adresse:'12 rue de la Paix, 75001 Paris' },
+  { id:2, adresse:'12 rue de la Paix, 69001 Lyon' },
+  { id:3, adresse:'12 rue de la Paix, 33000 Bordeaux' },
+  { id:4, adresse:'Place du Général de Gaulle, 59000 Lille' },
+  { id:5, adresse:'5 allée des Roses, 31000 Toulouse' },
+];
+
+// Demandes existantes
+const DEMANDES_INIT = [
+  {
+    id: 'DEM-2024-001', dateCreation: '15/01/2024', auteur: 'Marie Dupont',
+    type: 'Modification de coordonnées bancaires', canal: 'Téléphone',
+    demandeur: DEMANDEURS[0], statut: 'Prise en charge',
+    historique: [
+      { statut: 'Nouvelle', date: '15/01/2024 09:00' },
+      { statut: 'Prise en charge', date: '15/01/2024 10:30' }
+    ]
+  },
+  {
+    id: 'DEM-2024-002', dateCreation: '20/01/2024', auteur: 'Marie Dupont',
+    type: 'Changement d\'adresse', canal: 'Espace adhérent',
+    demandeur: DEMANDEURS[1], statut: 'En attente client',
+    historique: [
+      { statut: 'Nouvelle', date: '20/01/2024 14:00' },
+      { statut: 'Prise en charge', date: '21/01/2024 09:15' },
+      { statut: 'En attente client', date: '22/01/2024 11:00' }
+    ]
+  },
+  {
+    id: 'DEM-2024-003', dateCreation: '25/01/2024', auteur: 'Jean Martin (Self Care)',
+    type: 'Demande d\'information', canal: 'Email',
+    demandeur: DEMANDEURS[2], statut: 'Résolue',
+    historique: [
+      { statut: 'Nouvelle', date: '25/01/2024 16:30' },
+      { statut: 'Prise en charge', date: '26/01/2024 08:45' },
+      { statut: 'Résolue', date: '26/01/2024 14:20' }
+    ]
+  },
+  {
+    id: 'DEM-2024-004', dateCreation: '28/01/2024', auteur: 'Marie Dupont',
+    type: 'Mise à jour de coordonnées', canal: 'Téléphone',
+    demandeur: DEMANDEURS[0], statut: 'Nouvelle',
+    historique: [{ statut: 'Nouvelle', date: '28/01/2024 09:00' }]
+  },
+  {
+    id: 'DEM-2024-005', dateCreation: '02/02/2024', auteur: 'Marie Dupont',
+    type: 'Modification de coordonnées bancaires', canal: 'Courrier',
+    demandeur: DEMANDEURS[1], statut: 'Close',
+    historique: [
+      { statut: 'Nouvelle', date: '02/02/2024 10:00' },
+      { statut: 'Prise en charge', date: '03/02/2024 09:00' },
+      { statut: 'Résolue', date: '05/02/2024 16:00' },
+      { statut: 'Close', date: '07/02/2024 14:00' }
+    ]
+  }
+];
+
+// =================================================================
+//  ÉTAT GLOBAL
+// =================================================================
+let state = {
+  demandes: JSON.parse(JSON.stringify(DEMANDES_INIT)),
+  tabs: [],        // { id, label, screen, data }
+  activeTabId: null,
+  nextTabId: 1,
+  nextDemId: 6,
+  // Temp modal data
+  modalContratsCallback: null,
+  modalContratsSelected: [],
+};
+
+// =================================================================
+//  UTILITAIRES
+// =================================================================
+function today() {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
+function now() {
+  const d = new Date();
+  return `${today()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function genId() {
+  const n = String(state.nextDemId++).padStart(3,'0');
+  return `DEM-2024-${n}`;
+}
+function badgeClass(statut) {
+  const map = {
+    'Nouvelle':'badge-nouvelle','Prise en charge':'badge-pec',
+    'En attente client':'badge-attente','Résolue':'badge-resolue',
+    'Close':'badge-close','Abandonnée':'badge-abandonnee'
+  };
+  return map[statut] || 'badge-nouvelle';
+}
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// =================================================================
+//  GESTION DES ONGLETS
+// =================================================================
+function addTab(label, screen, data) {
+  const id = 'tab-' + (state.nextTabId++);
+  state.tabs.push({ id, label, screen, data: data || {} });
+  state.activeTabId = id;
+  renderTabs();
+  renderScreen();
+}
+function closeTab(id, event) {
+  if (event) event.stopPropagation();
+  const idx = state.tabs.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  state.tabs.splice(idx, 1);
+  if (state.activeTabId === id) {
+    if (state.tabs.length) {
+      state.activeTabId = state.tabs[Math.max(0, idx - 1)].id;
+    } else {
+      state.activeTabId = null;
+    }
+  }
+  renderTabs();
+  renderScreen();
+}
+function selectTab(id) {
+  state.activeTabId = id;
+  renderTabs();
+  renderScreen();
+}
+function activeTab() {
+  return state.tabs.find(t => t.id === state.activeTabId) || null;
+}
+function updateActiveTabLabel(label) {
+  const tab = activeTab();
+  if (tab) { tab.label = label; renderTabs(); }
+}
+
+function renderTabs() {
+  const bar = document.getElementById('tab-bar');
+  bar.innerHTML = state.tabs.map(tab => `
+    <div class="tab ${tab.id === state.activeTabId ? 'active' : ''}" onclick="selectTab('${tab.id}')">
+      <span class="tab-label" title="${escapeHtml(tab.label)}">${escapeHtml(tab.label)}</span>
+      <span class="tab-close" onclick="closeTab('${tab.id}', event)" title="Fermer cet onglet">✕</span>
+    </div>
+  `).join('') + `<button class="tab-add-btn" onclick="openNouvelleDemandeTab()" title="Nouvelle demande">＋</button>`;
+}
+
+// =================================================================
+//  RENDU DES ÉCRANS
+// =================================================================
+function renderScreen() {
+  const container = document.getElementById('main-content');
+  const tab = activeTab();
+  if (!tab) {
+    container.innerHTML = `<div class="empty-state">Aucun onglet ouvert. Cliquez sur "＋" pour créer une nouvelle demande.</div>`;
+    return;
+  }
+  switch(tab.screen) {
+    case 'liste':    container.innerHTML = renderScreenA(); break;
+    case 'step1':    container.innerHTML = renderScreenB(); break;
+    case 'step2':    container.innerHTML = renderScreenC(); break;
+    case 'step3':    container.innerHTML = renderScreenD(); break;
+    default:         container.innerHTML = `<div class="empty-state">Écran inconnu.</div>`;
+  }
+  // Re-attach event listeners after re-render
+  attachScreenListeners();
+}
+
+// =================================================================
+//  ÉCRAN A – LISTE DES DEMANDES
+// =================================================================
+function renderScreenA() {
+  const rows = state.demandes.map(d => `
+    <tr>
+      <td><button class="link-btn" onclick="openDemandeDetail('${escapeHtml(d.id)}')">${escapeHtml(d.id)}</button></td>
+      <td>${escapeHtml(d.demandeur.prenom)} ${escapeHtml(d.demandeur.nom)}</td>
+      <td>${escapeHtml(d.type)}</td>
+      <td>${escapeHtml(d.dateCreation)}</td>
+      <td>${escapeHtml(d.canal)}</td>
+      <td><span class="badge ${badgeClass(d.statut)}">${escapeHtml(d.statut)}</span></td>
+    </tr>
+  `).join('');
+
+  return `
+    <div class="screen active">
+      <div class="zone-entete">
+        <h2>Liste des demandes</h2>
+        <div class="context-info">
+          <div class="info-item"><span class="info-label">Utilisateur :</span> Marie Dupont</div>
+          <div class="info-item"><span class="info-label">Total demandes :</span> ${state.demandes.length}</div>
+        </div>
+      </div>
+      <div class="zone-travail">
+        <div class="screen-a-toolbar">
+          <h3>Demandes en cours</h3>
+          <button class="btn btn-non-validant" onclick="openNouvelleDemandeTab()">＋ Nouvelle demande</button>
+        </div>
+        <div class="filter-bar">
+          <input type="text" class="form-input" id="filter-search" placeholder="Rechercher (numéro, demandeur...)" oninput="filterDemandes()">
+          <select class="form-select" id="filter-statut" onchange="filterDemandes()">
+            <option value="">Tous les statuts</option>
+            <option>Nouvelle</option>
+            <option>Prise en charge</option>
+            <option>En attente client</option>
+            <option>Résolue</option>
+            <option>Close</option>
+            <option>Abandonnée</option>
+          </select>
+        </div>
+        <table class="data-table" id="demandes-table">
+          <thead>
+            <tr>
+              <th>Numéro</th><th>Demandeur</th><th>Type de demande</th>
+              <th>Date de création</th><th>Canal</th><th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="zone-commandes">
+        <button class="btn btn-non-validant" onclick="openNouvelleDemandeTab()">＋ Nouvelle demande</button>
+      </div>
+    </div>
+  `;
+}
+
+function filterDemandes() {
+  const search = (document.getElementById('filter-search')?.value || '').toLowerCase();
+  const statut = document.getElementById('filter-statut')?.value || '';
+  const tbody = document.querySelector('#demandes-table tbody');
+  if (!tbody) return;
+  const filtered = state.demandes.filter(d => {
+    const matchSearch = !search ||
+      d.id.toLowerCase().includes(search) ||
+      (d.demandeur.prenom + ' ' + d.demandeur.nom).toLowerCase().includes(search) ||
+      d.type.toLowerCase().includes(search);
+    const matchStatut = !statut || d.statut === statut;
+    return matchSearch && matchStatut;
+  });
+  tbody.innerHTML = filtered.map(d => `
+    <tr>
+      <td><button class="link-btn" onclick="openDemandeDetail('${escapeHtml(d.id)}')">${escapeHtml(d.id)}</button></td>
+      <td>${escapeHtml(d.demandeur.prenom)} ${escapeHtml(d.demandeur.nom)}</td>
+      <td>${escapeHtml(d.type)}</td>
+      <td>${escapeHtml(d.dateCreation)}</td>
+      <td>${escapeHtml(d.canal)}</td>
+      <td><span class="badge ${badgeClass(d.statut)}">${escapeHtml(d.statut)}</span></td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" class="empty-state">Aucune demande trouvée</td></tr>';
+}
+
+function openDemandeDetail(id) {
+  const d = state.demandes.find(x => x.id === id);
+  if (!d) return;
+  // Open read-only detail in new tab
+  addTab(`Demande ${d.id}`, 'detail', { demande: d });
+  renderScreen(); // re-render after addTab changed screen to 'detail'
+  // Actually render detail
+  const container = document.getElementById('main-content');
+  container.innerHTML = renderDemandeDetail(d);
+}
+
+function renderDemandeDetail(d) {
+  const hist = d.historique.map(h => `
+    <div class="recap-row"><span class="recap-label">${escapeHtml(h.date)}</span><span class="recap-value"><span class="badge ${badgeClass(h.statut)}">${escapeHtml(h.statut)}</span></span></div>
+  `).join('');
+  return `
+    <div class="screen active">
+      <div class="zone-entete">
+        <h2>Détail de la demande – ${escapeHtml(d.id)}</h2>
+        <div class="context-info">
+          <div class="info-item"><span class="info-label">Demandeur :</span> ${escapeHtml(d.demandeur.prenom)} ${escapeHtml(d.demandeur.nom)}</div>
+          <div class="info-item"><span class="info-label">Type :</span> ${escapeHtml(d.type)}</div>
+          <div class="info-item"><span class="info-label">Statut :</span> <span class="badge ${badgeClass(d.statut)}">${escapeHtml(d.statut)}</span></div>
+          <div class="info-item"><span class="info-label">Date :</span> ${escapeHtml(d.dateCreation)}</div>
+        </div>
+      </div>
+      <div class="zone-travail">
+        <div class="recap-block">
+          <h4>Demandeur</h4>
+          <div class="recap-row"><span class="recap-label">Nom</span><span class="recap-value">${escapeHtml(d.demandeur.nom)}</span></div>
+          <div class="recap-row"><span class="recap-label">Prénom</span><span class="recap-value">${escapeHtml(d.demandeur.prenom)}</span></div>
+          <div class="recap-row"><span class="recap-label">Numéro de client</span><span class="recap-value">${escapeHtml(d.demandeur.numClient)}</span></div>
+        </div>
+        <div class="recap-block">
+          <h4>Demande</h4>
+          <div class="recap-row"><span class="recap-label">Numéro</span><span class="recap-value">${escapeHtml(d.id)}</span></div>
+          <div class="recap-row"><span class="recap-label">Type</span><span class="recap-value">${escapeHtml(d.type)}</span></div>
+          <div class="recap-row"><span class="recap-label">Canal d'origine</span><span class="recap-value">${escapeHtml(d.canal)}</span></div>
+          <div class="recap-row"><span class="recap-label">Date de création</span><span class="recap-value">${escapeHtml(d.dateCreation)}</span></div>
+          <div class="recap-row"><span class="recap-label">Auteur</span><span class="recap-value">${escapeHtml(d.auteur)}</span></div>
+          <div class="recap-row"><span class="recap-label">Statut courant</span><span class="recap-value"><span class="badge ${badgeClass(d.statut)}">${escapeHtml(d.statut)}</span></span></div>
+        </div>
+        <div class="recap-block">
+          <h4>Historique des statuts</h4>
+          ${hist}
+        </div>
+      </div>
+      <div class="zone-commandes">
+        <button class="btn btn-annuler" onclick="goToListe()">Retour à la liste</button>
+      </div>
+    </div>
+  `;
+}
+
+// =================================================================
+//  OUVERTURE DES ONGLETS DE CRÉATION
+// =================================================================
+function openNouvelleDemandeTab() {
+  const data = {
+    step: 1,
+    typeId: null,
+    demandeurId: DEMANDEURS[0].id, // par défaut premier demandeur
+    canal: 'Téléphone',
+    // C1
+    coordsBancairesSelectionnees: [],
+    contratsSelectionnes: [],
+    // C2
+    adresseSouhaitee: '',
+    adresseCertifiee: null,
+    // C3
+    emails: JSON.parse(JSON.stringify(DEMANDEURS[0].emails)),
+    telephones: JSON.parse(JSON.stringify(DEMANDEURS[0].telephones)),
+    // C4
+    question: '',
+    // IDs courants pour add
+    nextEmailId: 100,
+    nextTelId: 100,
+    nextCoordId: 100,
+    errors: [],
+  };
+  addTab('Nouvelle demande', 'step1', data);
+}
+
+function goToListe() {
+  const tab = activeTab();
+  if (tab) {
+    tab.screen = 'liste';
+    tab.label = 'Liste des demandes';
+    tab.data = {};
+    renderTabs();
+    renderScreen();
+  }
+}
+
+// =================================================================
+//  ÉCRAN B – ÉTAPE 1 : CHOIX DU TYPE
+// =================================================================
+function renderScreenB() {
+  const tab = activeTab();
+  const data = tab.data;
+  const errors = data.errors || [];
+
+  const types = TYPES_DEMANDE.map(t => `
+    <div class="radio-option ${data.typeId === t.id ? 'selected' : ''}" onclick="selectType('${t.id}')">
+      <input type="radio" name="type-demande" value="${escapeHtml(t.id)}" ${data.typeId === t.id ? 'checked' : ''} onchange="selectType('${t.id}')">
+      <div class="radio-text">
+        <strong>${escapeHtml(t.label)}</strong>
+        <span>${escapeHtml(t.desc)}</span>
+      </div>
+    </div>
+  `).join('');
+
+  const demandeur = DEMANDEURS.find(d => d.id === data.demandeurId) || DEMANDEURS[0];
+  const errorHtml = errors.length ? `<div class="error-list">${errors.map(e => `<p>${escapeHtml(e)}</p>`).join('')}</div>` : '';
+
+  return `
+    <div class="screen active">
+      <div class="zone-entete">
+        <h2>Nouvelle demande – Étape 1/3 : Type de demande</h2>
+        <div class="context-info">
+          <div class="info-item"><span class="info-label">Demandeur :</span> ${escapeHtml(demandeur.prenom)} ${escapeHtml(demandeur.nom)}</div>
+          <div class="info-item"><span class="info-label">Client N° :</span> ${escapeHtml(demandeur.numClient)}</div>
+          <div class="info-item"><span class="info-label">Date de création :</span> ${today()}</div>
+          <div class="info-item"><span class="info-label">Statut :</span> <span class="badge badge-nouvelle">Nouvelle</span></div>
+        </div>
+        ${errorHtml}
+      </div>
+      <div class="zone-travail">
+        <div class="wizard-steps">
+          <div class="wizard-step active"><span class="step-num">1</span>Type de demande</div>
+          <span class="wizard-arrow">›</span>
+          <div class="wizard-step"><span class="step-num">2</span>Saisie des données</div>
+          <span class="wizard-arrow">›</span>
+          <div class="wizard-step"><span class="step-num">3</span>Récapitulatif</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Demandeur
+            <span class="required-star">*</span>
+          </label>
+          <select class="form-select" id="select-demandeur" onchange="changeDemandeur(this.value)">
+            ${DEMANDEURS.map(d => `<option value="${d.id}" ${d.id === data.demandeurId ? 'selected' : ''}>${escapeHtml(d.prenom)} ${escapeHtml(d.nom)} (${escapeHtml(d.numClient)})</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Canal d'origine
+            <span class="required-star">*</span>
+          </label>
+          <select class="form-select" id="select-canal" onchange="changeCanal(this.value)">
+            ${CANAUX.map(c => `<option value="${escapeHtml(c)}" ${c === data.canal ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Type de demande
+            <span class="required-star">*</span>
+          </label>
+          <div class="radio-group">${types}</div>
+        </div>
+      </div>
+      <div class="zone-commandes">
+        <button class="btn btn-annuler" onclick="annulerCreation()">Annuler</button>
+        <div class="cmd-spacer"></div>
+        <button class="btn btn-non-validant" onclick="goToStep2()">Suivant &rsaquo;</button>
+      </div>
+    </div>
+  `;
+}
+
+function selectType(id) {
+  const tab = activeTab();
+  if (tab) { tab.data.typeId = id; tab.data.errors = []; renderScreen(); }
+}
+function changeDemandeur(id) {
+  const tab = activeTab();
+  if (!tab) return;
+  const did = parseInt(id, 10);
+  tab.data.demandeurId = did;
+  const dem = DEMANDEURS.find(d => d.id === did);
+  if (dem) {
+    tab.data.emails = JSON.parse(JSON.stringify(dem.emails));
+    tab.data.telephones = JSON.parse(JSON.stringify(dem.telephones));
+    tab.data.coordsBancairesSelectionnees = [];
+    tab.data.contratsSelectionnes = [];
+  }
+}
+function changeCanal(c) {
+  const tab = activeTab();
+  if (tab) tab.data.canal = c;
+}
+function goToStep2() {
+  const tab = activeTab();
+  if (!tab) return;
+  // Sync selects before navigation
+  const selDem = document.getElementById('select-demandeur');
+  if (selDem) changeDemandeur(selDem.value);
+  const selCanal = document.getElementById('select-canal');
+  if (selCanal) changeCanal(selCanal.value);
+
+  if (!tab.data.typeId) {
+    tab.data.errors = ['Veuillez sélectionner un type de demande.'];
+    renderScreen();
+    return;
+  }
+  const typeDef = TYPES_DEMANDE.find(t => t.id === tab.data.typeId);
+  tab.data.errors = [];
+  tab.screen = 'step2';
+  tab.label = `Nouvelle – ${typeDef.label}`;
+  renderTabs();
+  renderScreen();
+}
+function annulerCreation() {
+  const tab = activeTab();
+  if (!tab) return;
+  if (!confirm('Abandonner la création de cette demande ?')) return;
+  closeTab(tab.id);
+}
+
+// =================================================================
+//  ÉCRAN C – ÉTAPE 2 : SAISIE SELON TYPE
+// =================================================================
+function renderScreenC() {
+  const tab = activeTab();
+  const data = tab.data;
+  const typeDef = TYPES_DEMANDE.find(t => t.id === data.typeId);
+  const demandeur = DEMANDEURS.find(d => d.id === data.demandeurId) || DEMANDEURS[0];
+  const errors = data.errors || [];
+  const errorHtml = errors.length ? `<div class="error-list">${errors.map(e => `<p>${escapeHtml(e)}</p>`).join('')}</div>` : '';
+
+  const header = `
+    <div class="zone-entete">
+      <h2>Nouvelle demande – Étape 2/3 : ${escapeHtml(typeDef ? typeDef.label : '')}</h2>
+      <div class="context-info">
+        <div class="info-item"><span class="info-label">Demandeur :</span> ${escapeHtml(demandeur.prenom)} ${escapeHtml(demandeur.nom)}</div>
+        <div class="info-item"><span class="info-label">Type :</span> ${escapeHtml(typeDef ? typeDef.label : '')}</div>
+        <div class="info-item"><span class="info-label">Date :</span> ${today()}</div>
+        <div class="info-item"><span class="info-label">Statut :</span> <span class="badge badge-nouvelle">Nouvelle</span></div>
+      </div>
+      ${errorHtml}
+    </div>
+  `;
+
+  const cmds = `
+    <div class="zone-commandes">
+      <button class="btn btn-non-validant" onclick="retourStep1()">&lsaquo; Retour</button>
+      <button class="btn btn-annuler" onclick="annulerCreation()">Annuler</button>
+      <div class="cmd-spacer"></div>
+      <button class="btn btn-non-validant" onclick="goToStep3()">Suivant &rsaquo;</button>
+    </div>
+  `;
+
+  const wizardSteps = `
+    <div class="wizard-steps">
+      <div class="wizard-step done"><span class="step-num">✓</span>Type de demande</div>
+      <span class="wizard-arrow">›</span>
+      <div class="wizard-step active"><span class="step-num">2</span>Saisie des données</div>
+      <span class="wizard-arrow">›</span>
+      <div class="wizard-step"><span class="step-num">3</span>Récapitulatif</div>
+    </div>
+  `;
+
+  let travail = '';
+  switch(data.typeId) {
+    case 'coords-bancaires': travail = renderC1(data, demandeur); break;
+    case 'changement-adresse': travail = renderC2(data); break;
+    case 'maj-coordonnees': travail = renderC3(data); break;
+    case 'demande-info': travail = renderC4(data); break;
+    default: travail = '<p>Type inconnu.</p>';
+  }
+
+  return `<div class="screen active">${header}<div class="zone-travail">${wizardSteps}${travail}</div>${cmds}</div>`;
+}
+
+// C1 – Modification coordonnées bancaires
+function renderC1(data, demandeur) {
+  const coords = demandeur.coordsBancaires.map(c => `
+    <div class="coord-item">
+      <input type="checkbox" id="coord-${c.id}" value="${c.id}"
+        ${data.coordsBancairesSelectionnees.includes(c.id) ? 'checked' : ''}
+        onchange="toggleCoordBancaire(${c.id}, this.checked)">
+      <div class="coord-info">
+        <strong>${escapeHtml(c.iban)}</strong>
+        <span>${escapeHtml(c.titulaire)}</span>
+      </div>
+    </div>
+  `).join('') || '<p class="text-muted">Aucune coordonnée bancaire enregistrée.</p>';
+
+  const contratsHtml = data.contratsSelectionnes.length
+    ? data.contratsSelectionnes.map(id => {
+        const c = CONTRATS_DISPONIBLES.find(x => x.id === id);
+        return c ? `<span class="tag">${escapeHtml(c.id)} – ${escapeHtml(c.type)}<span class="tag-remove" onclick="removeContrat('${escapeHtml(c.id)}')">✕</span></span>` : '';
+      }).join('')
+    : '<span class="text-muted">Aucun contrat sélectionné.</span>';
+
+  return `
+    <div class="section-card">
+      <h4>Coordonnées bancaires</h4>
+      <p style="font-size:12px;color:#666;margin-bottom:10px;">Sélectionnez les coordonnées bancaires concernées ou ajoutez-en de nouvelles.</p>
+      ${coords}
+      <div class="mt-12">
+        <button class="btn btn-non-validant" onclick="openModalIBAN()">＋ Ajouter une nouvelle coordonnée bancaire</button>
+      </div>
+    </div>
+    <div class="section-card">
+      <h4>Contrats concernés</h4>
+      <p style="font-size:12px;color:#666;margin-bottom:10px;">Sélectionnez les contrats à rattacher à cette modification.</p>
+      <div class="selected-tags" id="contrats-tags">${contratsHtml}</div>
+      <div class="mt-12">
+        <button class="btn btn-non-validant" onclick="openModalContrats()">Sélectionner les contrats</button>
+      </div>
+    </div>
+  `;
+}
+
+// C2 – Changement d'adresse
+function renderC2(data) {
+  const resultsHtml = data._adresseResults ? data._adresseResults.map(a => `
+    <div class="address-result-item ${data.adresseCertifiee && data.adresseCertifiee.id === a.id ? 'selected' : ''}" onclick="selectAdresseCertifiee(${a.id})">
+      <input type="radio" name="adresse-certifiee" value="${a.id}" ${data.adresseCertifiee && data.adresseCertifiee.id === a.id ? 'checked' : ''}>
+      <span>${escapeHtml(a.adresse)}</span>
+    </div>
+  `).join('') : '';
+
+  const selectedHtml = data.adresseCertifiee
+    ? `<div class="mt-8"><span class="tag">✓ ${escapeHtml(data.adresseCertifiee.adresse)}</span></div>`
+    : '';
+
+  return `
+    <div class="form-group">
+      <label class="form-label" for="adresse-libre">
+        Adresse souhaitée
+        <span class="required-star">*</span>
+        <span class="tooltip-container">
+          <button type="button" class="help-btn" onclick="showAide('Saisissez l\\'adresse souhaitée en texte libre pour effectuer une recherche dans le référentiel d\\'adresses certifiées.')">?</button>
+          <span class="tooltip-box">Texte libre pour recherche dans les adresses certifiées</span>
+        </span>
+      </label>
+      <input type="text" id="adresse-libre" class="form-input ${data.errors && data.errors.length ? 'error' : ''}"
+        placeholder="Ex: 12 rue de la Paix, Paris" value="${escapeHtml(data.adresseSouhaitee || '')}"
+        oninput="updateAdresseSouhaitee(this.value)">
+    </div>
+    <div class="mt-8">
+      <button class="btn btn-non-validant" onclick="rechercherAdresses()">Rechercher dans les adresses certifiées</button>
+    </div>
+    ${resultsHtml ? `<div class="mt-12"><strong style="font-size:13px;color:#003366;">Résultats :</strong><div class="mt-8">${resultsHtml}</div></div>` : ''}
+    ${selectedHtml ? `<div class="mt-12"><strong style="font-size:13px;color:#003366;">Adresse sélectionnée :</strong>${selectedHtml}</div>` : ''}
+  `;
+}
+
+// C3 – Mise à jour de coordonnées
+function renderC3(data) {
+  const emailsHtml = (data.emails || []).map(e => `
+    <div class="contact-item" id="email-item-${e.id}">
+      <span class="contact-type">${escapeHtml(e.type)}</span>
+      <span class="contact-value">${escapeHtml(e.adresse)}</span>
+      <input class="form-input contact-edit-input" id="email-edit-${e.id}" value="${escapeHtml(e.adresse)}" placeholder="Adresse email">
+      <button class="btn btn-non-validant" style="padding:4px 10px;font-size:12px;" onclick="editContact('email', ${e.id})">Modifier</button>
+      <button class="btn btn-annuler" style="padding:4px 10px;font-size:12px;" onclick="deleteContact('email', ${e.id})">Supprimer</button>
+    </div>
+  `).join('') || '<p class="text-muted">Aucun email enregistré.</p>';
+
+  const telHtml = (data.telephones || []).map(t => `
+    <div class="contact-item" id="tel-item-${t.id}">
+      <span class="contact-type">${escapeHtml(t.type)}</span>
+      <span class="contact-value">${escapeHtml(t.numero)}</span>
+      <input class="form-input contact-edit-input" id="tel-edit-${t.id}" value="${escapeHtml(t.numero)}" placeholder="Numéro de téléphone">
+      <button class="btn btn-non-validant" style="padding:4px 10px;font-size:12px;" onclick="editContact('tel', ${t.id})">Modifier</button>
+      <button class="btn btn-annuler" style="padding:4px 10px;font-size:12px;" onclick="deleteContact('tel', ${t.id})">Supprimer</button>
+    </div>
+  `).join('') || '<p class="text-muted">Aucun téléphone enregistré.</p>';
+
+  return `
+    <div class="section-card">
+      <h4>Courriels</h4>
+      ${emailsHtml}
+      <div class="mt-12">
+        <button class="btn btn-non-validant" onclick="addContact('email')">＋ Ajouter un courriel</button>
+      </div>
+    </div>
+    <div class="section-card">
+      <h4>Téléphones</h4>
+      ${telHtml}
+      <div class="mt-12">
+        <button class="btn btn-non-validant" onclick="addContact('tel')">＋ Ajouter un téléphone</button>
+      </div>
+    </div>
+  `;
+}
+
+// C4 – Demande d'information
+function renderC4(data) {
+  return `
+    <div class="form-group">
+      <label class="form-label" for="question-textarea">
+        Question
+        <span class="required-star">*</span>
+        <span class="tooltip-container">
+          <button type="button" class="help-btn" onclick="showAide('Décrivez précisément votre demande d\\'information. Soyez le plus complet possible pour faciliter le traitement.')">?</button>
+          <span class="tooltip-box">Décrivez précisément votre demande d'information</span>
+        </span>
+      </label>
+      <textarea id="question-textarea" class="form-textarea ${data.errors && data.errors.length ? 'error' : ''}"
+        placeholder="Saisissez votre question ou demande d'information..." rows="6"
+        oninput="updateQuestion(this.value)">${escapeHtml(data.question || '')}</textarea>
+      <div class="text-muted mt-8" id="char-count">${(data.question || '').length} caractère(s)</div>
+    </div>
+  `;
+}
+
+// =================================================================
+//  ACTIONS ÉCRAN C
+// =================================================================
+function retourStep1() {
+  const tab = activeTab();
+  if (!tab) return;
+  tab.data.errors = [];
+  tab.screen = 'step1';
+  tab.label = 'Nouvelle demande';
+  renderTabs();
+  renderScreen();
+}
+
+function updateAdresseSouhaitee(v) {
+  const tab = activeTab();
+  if (tab) { tab.data.adresseSouhaitee = v; tab.data.errors = []; }
+}
+
+function rechercherAdresses() {
+  const tab = activeTab();
+  if (!tab) return;
+  const q = (document.getElementById('adresse-libre')?.value || '').trim().toLowerCase();
+  if (!q) {
+    tab.data.errors = ['Veuillez saisir une adresse pour effectuer la recherche.'];
+    tab.data._adresseResults = [];
+    renderScreen();
+    return;
+  }
+  // Simulate search in certified addresses
+  tab.data.adresseSouhaitee = q;
+  tab.data._adresseResults = ADRESSES_CERTIFIEES.filter(a =>
+    a.adresse.toLowerCase().includes(q) || q.split(' ').some(w => w.length > 2 && a.adresse.toLowerCase().includes(w))
+  );
+  if (!tab.data._adresseResults.length) tab.data._adresseResults = ADRESSES_CERTIFIEES.slice(0, 3);
+  tab.data.errors = [];
+  renderScreen();
+}
+
+function selectAdresseCertifiee(id) {
+  const tab = activeTab();
+  if (!tab) return;
+  tab.data.adresseCertifiee = ADRESSES_CERTIFIEES.find(a => a.id === id);
+  tab.data.errors = [];
+  renderScreen();
+}
+
+function updateQuestion(v) {
+  const tab = activeTab();
+  if (tab) {
+    tab.data.question = v;
+    tab.data.errors = [];
+    const cc = document.getElementById('char-count');
+    if (cc) cc.textContent = v.length + ' caractère(s)';
+  }
+}
+
+function toggleCoordBancaire(id, checked) {
+  const tab = activeTab();
+  if (!tab) return;
+  if (checked) {
+    if (!tab.data.coordsBancairesSelectionnees.includes(id))
+      tab.data.coordsBancairesSelectionnees.push(id);
+  } else {
+    tab.data.coordsBancairesSelectionnees = tab.data.coordsBancairesSelectionnees.filter(x => x !== id);
+  }
+}
+
+function removeContrat(id) {
+  const tab = activeTab();
+  if (!tab) return;
+  tab.data.contratsSelectionnes = tab.data.contratsSelectionnes.filter(x => x !== id);
+  renderScreen();
+}
+
+function editContact(type, id) {
+  const item = document.getElementById((type === 'email' ? 'email-item-' : 'tel-item-') + id);
+  if (!item) return;
+  const isEditing = item.classList.contains('editing');
+  if (isEditing) {
+    // Save
+    const tab = activeTab();
+    if (!tab) return;
+    const input = document.getElementById((type === 'email' ? 'email-edit-' : 'tel-edit-') + id);
+    const val = input?.value.trim() || '';
+    if (type === 'email') {
+      const e = tab.data.emails.find(x => x.id === id);
+      if (e) e.adresse = val;
+    } else {
+      const t = tab.data.telephones.find(x => x.id === id);
+      if (t) t.numero = val;
+    }
+    renderScreen();
+  } else {
+    item.classList.add('editing');
+    const btn = item.querySelector('button');
+    if (btn) btn.textContent = 'Enregistrer';
+  }
+}
+
+function deleteContact(type, id) {
+  const tab = activeTab();
+  if (!tab) return;
+  if (!confirm('Supprimer cet élément ?')) return;
+  if (type === 'email') {
+    tab.data.emails = tab.data.emails.filter(x => x.id !== id);
+  } else {
+    tab.data.telephones = tab.data.telephones.filter(x => x.id !== id);
+  }
+  renderScreen();
+}
+
+function addContact(type) {
+  const tab = activeTab();
+  if (!tab) return;
+  const val = prompt(type === 'email' ? 'Nouvelle adresse email :' : 'Nouveau numéro de téléphone :');
+  if (!val || !val.trim()) return;
+  const typeLabel = type === 'email' ? 'Email' : 'Téléphone';
+  if (type === 'email') {
+    tab.data.emails.push({ id: tab.data.nextEmailId++, adresse: val.trim(), type: 'Personnel' });
+  } else {
+    tab.data.telephones.push({ id: tab.data.nextTelId++, numero: val.trim(), type: 'Mobile' });
+  }
+  renderScreen();
+}
+
+function goToStep3() {
+  const tab = activeTab();
+  if (!tab) return;
+  const data = tab.data;
+  data.errors = [];
+
+  // Sync textarea / input before navigation
+  const qta = document.getElementById('question-textarea');
+  if (qta) data.question = qta.value;
+  const addrInput = document.getElementById('adresse-libre');
+  if (addrInput) data.adresseSouhaitee = addrInput.value;
+
+  // Validation
+  switch (data.typeId) {
+    case 'changement-adresse':
+      if (!data.adresseSouhaitee || !data.adresseSouhaitee.trim())
+        data.errors.push('Le champ "Adresse souhaitée" est obligatoire.');
+      if (!data.adresseCertifiee)
+        data.errors.push('Veuillez sélectionner une adresse certifiée dans les résultats.');
+      break;
+    case 'demande-info':
+      if (!data.question || !data.question.trim())
+        data.errors.push('Le champ "Question" est obligatoire.');
+      break;
+    case 'coords-bancaires':
+      if (!data.coordsBancairesSelectionnees.length) {
+        const dem = DEMANDEURS.find(d => d.id === data.demandeurId);
+        if (dem && dem.coordsBancaires.length)
+          data.errors.push('Veuillez sélectionner au moins une coordonnée bancaire.');
+        else
+          data.errors.push('Veuillez ajouter et sélectionner au moins une coordonnée bancaire.');
+      }
+      if (!data.contratsSelectionnes.length)
+        data.errors.push('Veuillez sélectionner au moins un contrat concerné.');
+      break;
+    case 'maj-coordonnees':
+      if ((!data.emails || !data.emails.length) && (!data.telephones || !data.telephones.length))
+        data.errors.push('Veuillez conserver au moins un email ou un téléphone.');
+      break;
+  }
+
+  if (data.errors.length) { renderScreen(); return; }
+
+  tab.screen = 'step3';
+  tab.label = 'Nouvelle – Récapitulatif';
+  renderTabs();
+  renderScreen();
+}
+
+// =================================================================
+//  ÉCRAN D – ÉTAPE 3 : RÉCAPITULATIF
+// =================================================================
+function renderScreenD() {
+  const tab = activeTab();
+  const data = tab.data;
+  const demandeur = DEMANDEURS.find(d => d.id === data.demandeurId) || DEMANDEURS[0];
+  const typeDef = TYPES_DEMANDE.find(t => t.id === data.typeId);
+  const errors = data.errors || [];
+  const errorHtml = errors.length ? `<div class="error-list">${errors.map(e => `<p>${escapeHtml(e)}</p>`).join('')}</div>` : '';
+
+  const numDemande = data._numDemande || '(calculé à la validation)';
+
+  // Résumé données selon type
+  let donneesSuppl = '';
+  switch(data.typeId) {
+    case 'coords-bancaires': {
+      const dem = DEMANDEURS.find(d => d.id === data.demandeurId);
+      const coordLabels = (dem?.coordsBancaires || [])
+        .filter(c => data.coordsBancairesSelectionnees.includes(c.id))
+        .map(c => escapeHtml(c.iban)).join(', ') || 'Aucune';
+      const contratsLabels = data.contratsSelectionnes
+        .map(id => { const c = CONTRATS_DISPONIBLES.find(x => x.id === id); return c ? escapeHtml(`${c.id} – ${c.type}`) : id; })
+        .join(', ') || 'Aucun';
+      donneesSuppl = `
+        <div class="recap-row"><span class="recap-label">Coordonnées bancaires</span><span class="recap-value">${coordLabels}</span></div>
+        <div class="recap-row"><span class="recap-label">Contrats concernés</span><span class="recap-value">${contratsLabels}</span></div>
+      `;
+      break;
+    }
+    case 'changement-adresse':
+      donneesSuppl = `<div class="recap-row"><span class="recap-label">Adresse sélectionnée</span><span class="recap-value">${escapeHtml(data.adresseCertifiee?.adresse || 'Non défini')}</span></div>`;
+      break;
+    case 'maj-coordonnees': {
+      const emails = (data.emails || []).map(e => escapeHtml(e.adresse)).join(', ') || 'Aucun';
+      const tels = (data.telephones || []).map(t => escapeHtml(t.numero)).join(', ') || 'Aucun';
+      donneesSuppl = `
+        <div class="recap-row"><span class="recap-label">Emails</span><span class="recap-value">${emails}</span></div>
+        <div class="recap-row"><span class="recap-label">Téléphones</span><span class="recap-value">${tels}</span></div>
+      `;
+      break;
+    }
+    case 'demande-info':
+      donneesSuppl = `<div class="recap-row"><span class="recap-label">Question</span><span class="recap-value">${escapeHtml(data.question)}</span></div>`;
+      break;
+  }
+
+  return `
+    <div class="screen active">
+      <div class="zone-entete">
+        <h2>Nouvelle demande – Étape 3/3 : Récapitulatif</h2>
+        <div class="context-info">
+          <div class="info-item"><span class="info-label">Demandeur :</span> ${escapeHtml(demandeur.prenom)} ${escapeHtml(demandeur.nom)}</div>
+          <div class="info-item"><span class="info-label">Type :</span> ${escapeHtml(typeDef?.label || '')}</div>
+          <div class="info-item"><span class="info-label">Date :</span> ${today()}</div>
+          <div class="info-item"><span class="info-label">Statut :</span> <span class="badge badge-nouvelle">Nouvelle</span></div>
+        </div>
+        ${errorHtml}
+      </div>
+      <div class="zone-travail">
+        <div class="wizard-steps">
+          <div class="wizard-step done"><span class="step-num">✓</span>Type de demande</div>
+          <span class="wizard-arrow">›</span>
+          <div class="wizard-step done"><span class="step-num">✓</span>Saisie des données</div>
+          <span class="wizard-arrow">›</span>
+          <div class="wizard-step active"><span class="step-num">3</span>Récapitulatif</div>
+        </div>
+
+        <div class="recap-block">
+          <h4>Demandeur</h4>
+          <div class="recap-row"><span class="recap-label">Nom</span><span class="recap-value">${escapeHtml(demandeur.nom)}</span></div>
+          <div class="recap-row"><span class="recap-label">Prénom</span><span class="recap-value">${escapeHtml(demandeur.prenom)}</span></div>
+          <div class="recap-row"><span class="recap-label">Numéro de client</span><span class="recap-value">${escapeHtml(demandeur.numClient)}</span></div>
+        </div>
+
+        <div class="recap-block">
+          <h4>Demande</h4>
+          <div class="recap-row"><span class="recap-label">Type de demande</span><span class="recap-value">${escapeHtml(typeDef?.label || '')}</span></div>
+          <div class="recap-row"><span class="recap-label">Numéro</span><span class="recap-value">${escapeHtml(numDemande)}</span></div>
+          <div class="recap-row"><span class="recap-label">Date de création</span><span class="recap-value">${today()}</span></div>
+          <div class="recap-row"><span class="recap-label">Canal d'origine</span><span class="recap-value">${escapeHtml(data.canal || '')}</span></div>
+          <div class="recap-row"><span class="recap-label">Statut</span><span class="recap-value"><span class="badge badge-nouvelle">Nouvelle</span></span></div>
+          ${donneesSuppl}
+        </div>
+      </div>
+      <div class="zone-commandes">
+        <button class="btn btn-non-validant" onclick="retourStep2()">&lsaquo; Modifier</button>
+        <button class="btn btn-annuler" onclick="annulerCreation()">Annuler</button>
+        <div class="cmd-spacer"></div>
+        <button class="btn btn-validant" onclick="validerEnvoiDemande()">Valider et envoyer</button>
+      </div>
+    </div>
+  `;
+}
+
+function retourStep2() {
+  const tab = activeTab();
+  if (!tab) return;
+  const typeDef = TYPES_DEMANDE.find(t => t.id === tab.data.typeId);
+  tab.data.errors = [];
+  tab.screen = 'step2';
+  tab.label = `Nouvelle – ${typeDef ? typeDef.label : ''}`;
+  renderTabs();
+  renderScreen();
+}
+
+function validerEnvoiDemande() {
+  const tab = activeTab();
+  if (!tab) return;
+  const data = tab.data;
+  const demandeur = DEMANDEURS.find(d => d.id === data.demandeurId) || DEMANDEURS[0];
+  const typeDef = TYPES_DEMANDE.find(t => t.id === data.typeId);
+
+  const newId = genId();
+  const newDemande = {
+    id: newId,
+    dateCreation: today(),
+    auteur: `${CURRENT_USER.prenom} ${CURRENT_USER.nom}`,
+    type: typeDef?.label || '',
+    canal: data.canal,
+    demandeur: demandeur,
+    statut: 'Nouvelle',
+    historique: [{ statut: 'Nouvelle', date: now() }]
+  };
+
+  state.demandes.unshift(newDemande);
+  data._numDemande = newId;
+
+  // Show confirmation then go back to list
+  alert(`✓ Demande ${newId} créée avec succès !\n\nLa demande a été transmise.`);
+  closeTab(tab.id);
+  // If liste tab exists, refresh it
+  const listeTab = state.tabs.find(t => t.screen === 'liste');
+  if (listeTab) {
+    state.activeTabId = listeTab.id;
+    renderTabs();
+    renderScreen();
+  }
+}
+
+// =================================================================
+//  MODAL : CONTRATS
+// =================================================================
+function openModalContrats() {
+  const tab = activeTab();
+  if (!tab) return;
+  // Render contrats
+  const tbody = document.getElementById('modal-contrats-tbody');
+  tbody.innerHTML = CONTRATS_DISPONIBLES.map(c => `
+    <tr>
+      <td class="checkbox-col">
+        <input type="checkbox" id="mc-${escapeHtml(c.id)}" value="${escapeHtml(c.id)}"
+          ${tab.data.contratsSelectionnes.includes(c.id) ? 'checked' : ''}>
+      </td>
+      <td>${escapeHtml(c.id)}</td>
+      <td>${escapeHtml(c.type)}</td>
+      <td>${escapeHtml(c.dateDebut)}</td>
+    </tr>
+  `).join('');
+  // Sync select-all
+  const allChecked = CONTRATS_DISPONIBLES.every(c => tab.data.contratsSelectionnes.includes(c.id));
+  document.getElementById('select-all-contrats').checked = allChecked;
+  openModal('modal-contrats');
+}
+
+function toggleAllContrats(checkbox) {
+  CONTRATS_DISPONIBLES.forEach(c => {
+    const cb = document.getElementById('mc-' + c.id);
+    if (cb) cb.checked = checkbox.checked;
+  });
+}
+
+function validerSelectionContrats() {
+  const tab = activeTab();
+  if (!tab) return;
+  const selected = [];
+  CONTRATS_DISPONIBLES.forEach(c => {
+    const cb = document.getElementById('mc-' + c.id);
+    if (cb && cb.checked) selected.push(c.id);
+  });
+  tab.data.contratsSelectionnes = selected;
+  closeModal('modal-contrats');
+  renderScreen();
+}
+
+// =================================================================
+//  MODAL : IBAN
+// =================================================================
+function openModalIBAN() {
+  document.getElementById('iban-input').value = '';
+  document.getElementById('iban-titulaire').value = '';
+  document.getElementById('iban-errors').style.display = 'none';
+  openModal('modal-iban');
+}
+
+function validerIBAN() {
+  const iban = document.getElementById('iban-input').value.trim();
+  const titulaire = document.getElementById('iban-titulaire').value.trim();
+  const errDiv = document.getElementById('iban-errors');
+  const errors = [];
+
+  if (!iban) errors.push('L\'IBAN est obligatoire.');
+  else if (iban.length < 14) errors.push('L\'IBAN saisi semble invalide (longueur insuffisante).');
+
+  if (!titulaire) errors.push('Le nom du titulaire est obligatoire.');
+
+  if (errors.length) {
+    errDiv.innerHTML = errors.map(e => `<p style="color:#CC0000;font-size:13px;">⚠ ${escapeHtml(e)}</p>`).join('');
+    errDiv.style.display = 'block';
+    return;
+  }
+
+  const tab = activeTab();
+  if (!tab) return;
+  const dem = DEMANDEURS.find(d => d.id === tab.data.demandeurId);
+  if (dem) {
+    const newId = tab.data.nextCoordId++;
+    dem.coordsBancaires.push({ id: newId, iban, titulaire });
+    tab.data.coordsBancairesSelectionnees.push(newId);
+  }
+  closeModal('modal-iban');
+  renderScreen();
+}
+
+// =================================================================
+//  MODAL GÉNÉRIQUE
+// =================================================================
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) closeModal(this.id);
+  });
+});
+
+// =================================================================
+//  AIDE CONTEXTUELLE
+// =================================================================
+function showAide(text) {
+  document.getElementById('modal-aide-content').textContent = text;
+  openModal('modal-aide');
+}
+
+// =================================================================
+//  LISTENERS APRÈS RENDU
+// =================================================================
+function attachScreenListeners() {
+  // Re-attach any event listeners needed after DOM update
+  // (most are inline onclick, so minimal work needed here)
+}
+
+// =================================================================
+//  INITIALISATION
+// =================================================================
+function init() {
+  // Ajouter l'onglet Liste des demandes par défaut
+  addTab('Liste des demandes', 'liste', {});
+}
+
+// Close modal on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+  }
+});
+
+init();
+</script>
+</body>
+</html>
